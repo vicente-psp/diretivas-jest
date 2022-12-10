@@ -1,0 +1,131 @@
+<main style="margin: 10px">
+  <form [formGroup]="form" style="margin-bottom: 25px;">
+    <mat-card>
+      <mat-card-title>{{ titleForm }}</mat-card-title>
+      <mat-card-content>
+        <div class="row">
+          <div class="col-xs-6 col-sm-5 col-md-4 col-lg-3">
+            <mat-form-field appearance="outline">
+              <mat-label>id</mat-label>
+              <input matInput formControlName="id">
+            </mat-form-field>
+          </div>
+        </div>
+        <div class="row">
+          <div [class]="titleForm === 'Cadastrar tarefa' ? 'col-12' : 'col-xs-6 col-sm-7 col-md-8 col-lg-9'">
+            <mat-form-field appearance="outline">
+              <mat-label>descrição</mat-label>
+              <input matInput formControlName="descricao">
+            </mat-form-field>
+          </div>
+          <div *ngIf="titleForm !== 'Cadastrar tarefa'" class="col-xs-6 col-sm-5 col-md-4 col-lg-3">
+            <mat-form-field appearance="outline">
+              <mat-label>status</mat-label>
+              <mat-select formControlName="status" required>
+                <mat-option *ngFor="let obj of statusList" [value]="obj.value">
+                  {{ obj.description }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-12">
+            <mat-form-field appearance="outline">
+              <mat-label>observação</mat-label>
+              <textarea matInput formControlName="observacao"></textarea>
+            </mat-form-field>
+          </div>
+        </div>
+      </mat-card-content>
+      <mat-divider inset></mat-divider>
+      <mat-card-actions style="margin-left: 0; margin-right: 0;">
+        <button mat-raised-button color="primary" type="reset" (click)="salvarClick()" [disabled]="form.invalid || isLoadingSalvar">salvar</button>
+        <button mat-raised-button color="accent" type="reset" (click)="limparClick()" [disabled]="isLoadingSalvar">limpar</button>
+      </mat-card-actions>
+      <mat-card-footer *ngIf="isLoadingSalvar">
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+      </mat-card-footer>
+    </mat-card>
+  </form>
+
+
+  <button mat-raised-button style="margin-bottom: 5px;" (click)="listar()">listar</button>
+  <div *ngIf="isLoadingListar" class="progress-spinner">
+    <mat-progress-spinner
+        class="example-margin"
+        color="primary"
+        mode="indeterminate">
+    </mat-progress-spinner>
+  </div>
+  <table *ngIf="!isLoadingListar" mat-table [dataSource]="list" class="mat-elevation-z8">
+    <!-- id Column -->
+    <ng-container matColumnDef="id">
+      <th mat-header-cell *matHeaderCellDef> id </th>
+      <td mat-cell *matCellDef="let element"> {{ element.id }} </td>
+    </ng-container>
+
+    <!-- descricao Column -->
+    <ng-container matColumnDef="descricao">
+      <th mat-header-cell *matHeaderCellDef> descrição </th>
+      <td mat-cell *matCellDef="let element"> {{ element.descricao }} </td>
+    </ng-container>
+
+    <!-- observacao Column -->
+    <ng-container matColumnDef="observacao">
+      <th mat-header-cell *matHeaderCellDef> observação </th>
+      <td mat-cell *matCellDef="let element"> {{ element.observacao }} </td>
+    </ng-container>
+
+    <!-- dataCriacao Column -->
+    <ng-container matColumnDef="dataCriacao">
+      <th mat-header-cell *matHeaderCellDef> criação </th>
+      <td mat-cell *matCellDef="let element"> {{ element.dataCriacao | date }} </td>
+    </ng-container>
+
+    <!-- dataModificacao Column -->
+    <ng-container matColumnDef="dataModificacao">
+      <th mat-header-cell *matHeaderCellDef> modificação </th>
+      <td mat-cell *matCellDef="let element"> {{ element.dataModificacao | date }} </td>
+    </ng-container>
+
+    <!-- status Column -->
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef> status </th>
+      <td mat-cell *matCellDef="let element"> {{ element.status }} </td>
+    </ng-container>
+
+    <!-- status Column -->
+    <ng-container matColumnDef="acoes">
+      <th mat-header-cell *matHeaderCellDef style="text-align: center; width: 145px;"> ações </th>
+      <td mat-cell *matCellDef="let element" style="text-align: center; width: 145px;">
+        <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Example icon-button with a menu">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item (click)="alterarStatusClick(element, statusEnum.PENDENTE)">
+            <span>marcar como pendente</span>
+          </button>
+          <button mat-menu-item (click)="alterarStatusClick(element, statusEnum.FAZENDO)">
+            <span>marcar como fazendo</span>
+          </button>
+          <button mat-menu-item (click)="alterarStatusClick(element, statusEnum.FEITO)">
+            <span>marcar como feito</span>
+          </button>
+          <button mat-menu-item (click)="alterarStatusClick(element, statusEnum.CANCELADO)">
+            <span>marcar como cancelado</span>
+          </button>
+        </mat-menu>
+        <button mat-icon-button color="primary" (click)="editarClick(element)">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" (click)="removerClick(element)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+</main>
