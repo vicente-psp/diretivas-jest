@@ -80,13 +80,13 @@
     <!-- dataCriacao Column -->
     <ng-container matColumnDef="dataCriacao">
       <th mat-header-cell *matHeaderCellDef> criação </th>
-      <td mat-cell *matCellDef="let element"> {{ element.dataCriacao | date }} </td>
+      <td mat-cell *matCellDef="let element"> {{ element.dataCriacao | date: 'dd/M/yyyy HH:mm:ss' }} </td>
     </ng-container>
 
     <!-- dataModificacao Column -->
     <ng-container matColumnDef="dataModificacao">
       <th mat-header-cell *matHeaderCellDef> modificação </th>
-      <td mat-cell *matCellDef="let element"> {{ element.dataModificacao | date }} </td>
+      <td mat-cell *matCellDef="let element"> {{ element.dataModificacao | date: 'dd/M/yyyy HH:mm:ss' }} </td>
     </ng-container>
 
     <!-- status Column -->

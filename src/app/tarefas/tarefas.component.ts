@@ -13,10 +13,9 @@ export class TarefasComponent implements OnInit {
   CADASTRAR_TAREFA = 'Cadastrar tarefa';
   EDITAR_TAREFA = 'Editar tarefa';
   titleForm = this.CADASTRAR_TAREFA;
-  displayedColumns: string[] = [
-    'id', 'descricao', 'observacao', 'dataCriacao', 'dataModificacao', 'status', 'acoes'
-  ];
+  displayedColumns = ['id', 'descricao', 'observacao', 'dataCriacao', 'dataModificacao', 'status', 'acoes'];
   list: ITarefa[] = [];
+  tarefa: ITarefa = { descricao: '', observacao: '' };
   form = this._formBuilder.group({
     id: new FormControl<string | number>({ value: '', disabled: true }),
     descricao: ['', [Validators.required]],
@@ -78,18 +77,20 @@ export class TarefasComponent implements OnInit {
       descricao: descricao.value || '',
       observacao: observacao.value || '',
       dataCriacao: new Date(),
-      dataModificacao: new Date(),
       status: null
     }
 
     if (id.value && id.value?.toString() !== '') {
-      tarefa.id = id.value;
       const statusEnum = this.getStatusEnum(status);
-      tarefa.status = statusEnum;
-      this.tarefasService.editar(tarefa).subscribe(
+      this.tarefa.status = statusEnum;
+      this.tarefa.dataModificacao = new Date();
+      this.tarefa.descricao = descricao.value || '';
+      this.tarefa.observacao = observacao.value || '';
+      this.tarefasService.editar(this.tarefa).subscribe(
         () => {
           this.listar();
           this.clearForm();
+          this.form.controls.status.setValue(StatusEnum.PENDENTE);
         },
         () => this.isLoadingSalvar = false
       );
@@ -110,12 +111,14 @@ export class TarefasComponent implements OnInit {
     this.isLoadingSalvar = false;
     this.titleForm = this.CADASTRAR_TAREFA;
     this.form.enable();
+    this.form.controls.id.disable();
   }
 
   editarClick(tarefa: ITarefa): void {
     this.form.setValue(
-      { id: tarefa?.id?.toString() || null, descricao: tarefa.descricao, observacao: tarefa.observacao, status: tarefa.status }
+      { id: tarefa?.id || null, descricao: tarefa.descricao, observacao: tarefa.observacao, status: tarefa.status || StatusEnum.PENDENTE }
     );
+    this.tarefa = tarefa;
     this.titleForm = this.EDITAR_TAREFA;
   }
 
