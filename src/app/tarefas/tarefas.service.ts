@@ -14,9 +14,9 @@ export interface ITarefa {
   id?: string | number | null;
   descricao: string;
   observacao: string;
-  dataCriacao: Date;
-  dataModificacao: Date;
-  status: StatusEnum | null;
+  dataCriacao?: Date;
+  dataModificacao?: Date;
+  status?: StatusEnum | null;
 }
 
 @Injectable({
@@ -24,13 +24,16 @@ export interface ITarefa {
 })
 export class TarefasService {
 
-  // apiUrl = 'http://localhost:3000/api';
-  apiUrl = 'http://localhost:3000';
+  apiUrl = 'http://localhost:3000/api';
 
   constructor(private http: HttpClient) { }
 
   listar(): Observable<ITarefa[]> {
     return this.http.get<ITarefa[]>(`${this.apiUrl}/tarefas`);
+  }
+
+  getById(id: string | number): Observable<ITarefa> {
+    return this.http.get<ITarefa>(`${this.apiUrl}/tarefas/${id}`);
   }
 
   salvar(tarefa: ITarefa): Observable<ITarefa[]> {
@@ -46,7 +49,6 @@ export class TarefasService {
   }
 
   alterarStatus(id: string | number, status: StatusEnum): Observable<void> {
-    const params = new HttpParams().set('status', status || '');
-    return this.http.patch<void>(`${this.apiUrl}/tarefas/${id}/status`, null, { params });
+    return this.http.patch<void>(`${this.apiUrl}/tarefas/${id}`, { status });
   }
 }
