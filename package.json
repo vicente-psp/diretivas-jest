@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start:api": "json-server --watch ./mock/api.json -d 500 -m ./mock/status.js",
+    "start:api": "json-server --watch ./mock/api.json -d 500 -m ./mock/tarefas.js -r ./mock/routes.json",
     "start:app": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
