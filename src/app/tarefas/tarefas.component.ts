@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, Validators } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { TarefasService, ITarefa, StatusEnum } from './tarefas.service';
 
@@ -32,10 +33,22 @@ export class TarefasComponent implements OnInit {
   isLoadingListar = false;
   statusEnum = StatusEnum;
 
-  constructor(private tarefasService: TarefasService, private _formBuilder: FormBuilder) { }
+  constructor(
+    private tarefasService: TarefasService,
+    private _formBuilder: FormBuilder,
+    private _snackBar: MatSnackBar
+  ) { }
 
   ngOnInit(): void {
     this.listar();
+  }
+
+  openSnackBar(mensagem: string) {
+    this._snackBar.open(mensagem, 'Fechar', {
+      horizontalPosition: 'center',
+      verticalPosition: 'top',
+      duration: 15000
+    });
   }
 
   listar(): void {
@@ -45,7 +58,10 @@ export class TarefasComponent implements OnInit {
         this.list = data;
         this.isLoadingListar = false;
       },
-      () => this.isLoadingListar = false
+      () => {
+        this.isLoadingListar = false;
+        this.openSnackBar(`Houve algum erro ao tentar listar as tarefas`);
+      }
     );
   }
 
@@ -76,14 +92,12 @@ export class TarefasComponent implements OnInit {
     const tarefa: ITarefa = {
       descricao: descricao.value || '',
       observacao: observacao.value || '',
-      dataCriacao: new Date(),
       status: null
     }
 
     if (id.value && id.value?.toString() !== '') {
       const statusEnum = this.getStatusEnum(status);
       this.tarefa.status = statusEnum;
-      this.tarefa.dataModificacao = new Date();
       this.tarefa.descricao = descricao.value || '';
       this.tarefa.observacao = observacao.value || '';
       this.tarefasService.editar(this.tarefa).subscribe(
@@ -92,16 +106,21 @@ export class TarefasComponent implements OnInit {
           this.clearForm();
           this.form.controls.status.setValue(StatusEnum.PENDENTE);
         },
-        () => this.isLoadingSalvar = false
-      );
-    } else {
-      tarefa.status = StatusEnum.PENDENTE;
-      this.tarefasService.salvar(tarefa).subscribe(
         () => {
-          this.listar();
-          this.clearForm();
-        },
-        () => this.isLoadingSalvar = false
+          this.isLoadingSalvar = false;
+          this.openSnackBar(`Houve algum erro ao tentar editar a tarefa de id nº ${this.tarefa.id}`);
+        }
+        );
+      } else {
+        this.tarefasService.salvar(tarefa).subscribe(
+          () => {
+            this.listar();
+            this.clearForm();
+          },
+          () => {
+            this.isLoadingSalvar = false;
+            this.openSnackBar(`Houve algum erro ao tentar criar uma nova tarefa`);
+          }
       );
     }
   }
@@ -115,22 +134,48 @@ export class TarefasComponent implements OnInit {
   }
 
   editarClick(tarefa: ITarefa): void {
-    this.form.setValue(
-      { id: tarefa?.id || null, descricao: tarefa.descricao, observacao: tarefa.observacao, status: tarefa.status || StatusEnum.PENDENTE }
+    if (!tarefa?.id) {
+      return;
+    }
+    this.setTarefa(tarefa.id);
+  }
+
+  private setTarefa(id: string | number): void {
+    this.tarefasService.getById(id).subscribe(
+      tarefa => {
+        this.tarefa = tarefa;
+        this.form.setValue({
+          id,
+          descricao: tarefa.descricao,
+          observacao: tarefa.observacao,
+          status: tarefa?.status || StatusEnum.PENDENTE
+        });
+      },
+      () => {
+        this.openSnackBar(`Houve algum erro ao tentar buscar a tarefa de id nº ${id}`);
+      }
     );
-    this.tarefa = tarefa;
-    this.titleForm = this.EDITAR_TAREFA;
   }
 
   removerClick(tarefa: ITarefa): void {
-    this.tarefasService.remover(tarefa).subscribe(() => this.listar());
+    this.tarefasService.remover(tarefa).subscribe(
+      () => this.listar(),
+      () => {
+        this.openSnackBar(`Houve algum erro ao tentar remover a tarefa de id nº ${tarefa.id}`);
+      }
+    );
   }
 
   alterarStatusClick(tarefa: ITarefa, status: StatusEnum): void {
     if (!tarefa.id) {
       return;
     }
-    this.tarefasService.alterarStatus(tarefa.id, status).subscribe(() => this.listar());
+    this.tarefasService.alterarStatus(tarefa.id, status).subscribe(
+      () => this.listar(),
+      () => {
+        this.openSnackBar(`Houve algum erro ao tentar alterar a tarefa de id nº ${tarefa.id}`);
+      }
+    );
   }
 
   getNgClass(status: StatusEnum) {
